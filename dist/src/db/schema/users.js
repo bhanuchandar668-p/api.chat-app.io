@@ -1,4 +1,4 @@
-import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, pgTable, serial, timestamp, varchar, } from "drizzle-orm/pg-core";
 export const users = pgTable("users", {
     id: serial().primaryKey(),
     first_name: varchar().notNull(),
@@ -9,4 +9,4 @@ export const users = pgTable("users", {
     password: varchar().notNull(),
     created_at: timestamp().defaultNow(),
     updated_at: timestamp().defaultNow(),
-});
+}, (t) => [index("email_idx").on(t.email)]);

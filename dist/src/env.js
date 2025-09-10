@@ -4,6 +4,7 @@ export const VEnvSchema = object({
     NODE_ENV: string(),
     API_VERSION: string(),
     DATABASE_URL: string(),
+    JWT_SECRET: string(),
 });
 // eslint-disable-next-line import/no-mutable-exports
 let envData;

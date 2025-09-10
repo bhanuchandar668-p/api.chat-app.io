@@ -10,6 +10,7 @@ export const VEnvSchema = object({
   NODE_ENV: string(),
   API_VERSION: string(),
   DATABASE_URL: string(),
+  JWT_SECRET: string(),
 });
 
 export type Env = InferOutput<typeof VEnvSchema>;
