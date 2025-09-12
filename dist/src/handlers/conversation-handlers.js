@@ -4,7 +4,8 @@ import { sendResponse } from "../utils/resp-utils.js";
 import { conversations } from "../db/schema/conversations.js";
 import db from "../db/db-connection.js";
 import { checkConversationExists, fetchConversationParticipants, getConversations, getLastMessages, } from "../services/db/conversation-service.js";
-import { saveSingleRecord } from "../services/db/base-db-service.js";
+import { saveRecords, saveSingleRecord, } from "../services/db/base-db-service.js";
+import { conversation_participants } from "../db/schema/conversation-participants.js";
 export class ConversationHandlers {
     createConversation = factory.createHandlers(isAuthorized, async (c) => {
         const reqData = await c.req.json();
@@ -15,6 +16,17 @@ export class ConversationHandlers {
             const newConversation = await saveSingleRecord(conversations, {
                 is_group: false,
             });
+            const convoParticipants = [
+                {
+                    conversation_id: newConversation.id,
+                    user_id: +authUser.id,
+                },
+                {
+                    conversation_id: newConversation.id,
+                    user_id: +reqData.receiver_id,
+                },
+            ];
+            await saveRecords(conversation_participants, convoParticipants);
             conversationId = newConversation.id;
         }
         const resp = {
@@ -31,10 +43,11 @@ export class ConversationHandlers {
         const lastMessages = await getLastMessages(convoIds);
         const result = convos.map((c) => {
             const convoParticipants = participants.filter((p) => p.conversation_id === c.id);
+            const filteredParticipant = convoParticipants.find((p) => p.user_id !== authUser.id);
             return {
                 ...c,
-                participants: convoParticipants.filter((p) => p.user_id !== +authUser._id), // exclude current user
-                lastMessage: lastMessages.find((m) => m.conversation_id === c.id) || null,
+                receiver: filteredParticipant, // exclude current user
+                last_message: lastMessages.find((m) => m.conversation_id === c.id) || null,
             };
         });
         return sendResponse(c, 200, "Conversations fetched", result);

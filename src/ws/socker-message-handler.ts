@@ -43,6 +43,7 @@ export async function handleIncomingMessage(
         type: "message:acknowledge",
         payload: { from: userId, ...message.payload },
       };
+      
       socket.emit("message", acknowledge);
       break;
     }

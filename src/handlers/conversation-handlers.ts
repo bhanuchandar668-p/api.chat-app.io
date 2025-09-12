@@ -10,7 +10,11 @@ import {
   getConversations,
   getLastMessages,
 } from "../services/db/conversation-service.js";
-import { saveSingleRecord } from "../services/db/base-db-service.js";
+import {
+  saveRecords,
+  saveSingleRecord,
+} from "../services/db/base-db-service.js";
+import { conversation_participants } from "../db/schema/conversation-participants.js";
 
 export class ConversationHandlers {
   createConversation = factory.createHandlers(
@@ -31,6 +35,19 @@ export class ConversationHandlers {
         const newConversation = await saveSingleRecord(conversations, {
           is_group: false,
         });
+
+        const convoParticipants = [
+          {
+            conversation_id: newConversation.id,
+            user_id: +authUser.id,
+          },
+          {
+            conversation_id: newConversation.id,
+            user_id: +reqData.receiver_id,
+          },
+        ];
+
+        await saveRecords(conversation_participants, convoParticipants);
 
         conversationId = newConversation.id;
       }
@@ -62,12 +79,14 @@ export class ConversationHandlers {
           (p) => p.conversation_id === c.id
         );
 
+        const filteredParticipant = convoParticipants.find(
+          (p) => p.user_id !== authUser.id
+        );
+
         return {
           ...c,
-          participants: convoParticipants.filter(
-            (p) => p.user_id !== +authUser._id
-          ), // exclude current user
-          lastMessage:
+          receiver: filteredParticipant, // exclude current user
+          last_message:
             lastMessages.find((m) => m.conversation_id === c.id) || null,
         };
       });
