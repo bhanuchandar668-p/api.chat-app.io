@@ -60,6 +60,22 @@ export async function handleIncomingMessage(
       break;
     }
 
+    case "typing:start":
+    case "typing:stop":
+      const { conversationId, receiverId } = message.payload as TypingPayload;
+
+      const receiver = getClient(receiverId);
+
+      const payload = {
+        type,
+        payload: { conversationId, receiverId, from: userId },
+      };
+
+      if (receiver) {
+        receiver.emit("message", payload);
+      }
+
+      break;
     default:
       socket.emit("message", { type: "error", payload: "Unknown event type" });
   }

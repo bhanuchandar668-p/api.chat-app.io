@@ -30,9 +30,9 @@ export function injectSocket(server) {
         socket.on("message", async (data) => {
             await handleIncomingMessage(socket, userId, data);
         });
-        socket.on("typing", async (data) => {
-            await handleIncomingTyping(socket, userId, data);
-        });
+        // socket.on("typing", async (data) => {
+        //   await handleIncomingTyping(socket, userId, data);
+        // });
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${userId}`);
             removeClient(userId);
