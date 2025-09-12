@@ -15,6 +15,13 @@
       "when": 1757694124892,
       "tag": "0001_true_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757706554575,
+      "tag": "0002_fixed_micromax",
+      "breakpoints": true
     }
   ]
 }

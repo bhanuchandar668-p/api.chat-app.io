@@ -1,0 +1,1 @@
+ALTER TABLE "message_status" ADD COLUMN "delivered_at" timestamp;

@@ -1,61 +1,95 @@
-import { Server, Socket } from "socket.io";
-import type { Server as HttpServer } from "http";
-import { addClient, removeClient } from "./socket-clients.js";
-import { handleIncomingMessage } from "./socker-message-handler.js";
-import { getUserInfoFromToken } from "../utils/jwt-utils.js";
-import type { ServerType } from "@hono/node-server";
+import {
+  insertNewDirectMessage,
+  insertNewMessage,
+  updateDeliveryStatus,
+  updateMessageAsSent,
+} from "../helpers/message-helper.js";
+import type {
+  WsMessage,
+  MessageSendPayload,
+  TypingPayload,
+} from "../types/app.types.js";
+import { getClient } from "./socket-clients.js";
+import type { Socket } from "socket.io";
 
-let io: Server | null = null;
+export async function handleIncomingMessage(
+  socket: Socket,
+  userId: string,
+  message: WsMessage
+) {
+  const type = message.type;
 
-export function injectSocket(server: ServerType | HttpServer) {
-  io = new Server(server, {
-    cors: {
-      origin: "*", // adjust in prod
-      methods: ["GET", "POST"],
-    },
-  });
+  switch (type) {
+    case "message:send": {
+      const { receiverId, content } = message.payload as MessageSendPayload;
 
-  io.use(async (socket, next) => {
-    try {
-      const token = socket.handshake.query.token as string;
-      if (!token) return next(new Error("No token provided"));
+      const receiver = getClient(receiverId);
 
-      const userId = (await getUserInfoFromToken(token)) as string;
+      const msgResp = await insertNewMessage(+userId, +receiverId, content);
 
-      (socket as any).userId = userId; // attach userId to socket object
+      // Send message to receiver if online
+      if (receiver) {
+        const payload = {
+          type: "direct:message:new",
+          payload: { from: userId, content },
+        };
 
-      next();
-    } catch (err) {
-      next(new Error("Authentication failed"));
+        receiver.emit("message", payload);
+
+        updateMessageAsSent(msgResp.id, +userId);
+
+        updateDeliveryStatus(msgResp.id, "delivered");
+      }
+
+      // Acknowledge to sender
+      const acknowledge = {
+        type: "message:acknowledge",
+        payload: { from: userId, ...message.payload },
+      };
+
+      socket.emit("message", acknowledge);
+      break;
     }
-  });
 
-  io.on("connection", (socket: Socket) => {
-    const userId = (socket as any).userId;
+    case "message:read": {
+      const payload = {
+        type: "message:read",
+        payload: { userId, ...message.payload },
+      };
+      socket.emit("message", payload);
+      break;
+    }
 
-    console.log(`User connected: ${userId}`);
-
-    addClient(userId, socket);
-
-    socket.on("message", async (data) => {
-      await handleIncomingMessage(socket, userId, data);
-    });
-
-    socket.on("disconnect", () => {
-      console.log(`User disconnected: ${userId}`);
-      removeClient(userId);
-    });
-
-    socket.on("error", (err) => {
-      console.error(`Socket.IO error for user ${userId}:`, err);
-      removeClient(userId);
-    });
-  });
-
-  return io;
+    default:
+      socket.emit("message", { type: "error", payload: "Unknown event type" });
+  }
 }
 
-export function getIO() {
-  if (!io) throw new Error("Socket.IO not initialized");
-  return io;
+export async function handleIncomingTyping(
+  socket: Socket,
+  userId: string,
+  message: any
+) {
+  const type = message.type;
+
+  switch (type) {
+    case "typing:start":
+    case "typing:stop":
+      const { conversationId, receiverId } = message.payload as TypingPayload;
+
+      const receiver = getClient(receiverId);
+
+      const payload = {
+        type,
+        payload: { conversationId, receiverId, from: userId },
+      };
+
+      if (receiver) {
+        receiver.emit("typing", payload);
+      }
+
+      break;
+    default:
+      socket.emit("typing", { type: "error", payload: "Unknown event type" });
+  }
 }

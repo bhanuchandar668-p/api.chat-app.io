@@ -44,6 +44,6 @@ export interface MessageReadPayload {
 }
 
 export interface TypingPayload {
-  chatId: string;
+  conversationId: string;
   receiverId: string;
 }
