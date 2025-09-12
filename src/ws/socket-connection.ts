@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { addClient, removeClient } from "./socket-clients.js";
-import { handleIncomingMessage } from "./socket-handler.js";
+import { handleIncomingMessage, handleIncomingTyping } from "./socket-handler.js";
 import { getUserInfoFromToken } from "../utils/jwt-utils.js";
 import type { ServerType } from "@hono/node-server";
 
@@ -42,8 +42,8 @@ export function injectSocket(server: ServerType | HttpServer) {
     });
 
     socket.on("typing", async (data) => {
-        
-    })
+      await handleIncomingTyping(socket, userId, data);
+    });
 
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${userId}`);
