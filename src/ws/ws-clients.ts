@@ -3,6 +3,10 @@ import type { WSContext } from "hono/ws";
 export const clients = new Map<string, WSContext>();
 
 export const addClient = (userId: string, ws: WSContext) => {
+  console.log("User Added to clients", userId);
+
+  userId = userId.toString();
+
   clients.set(userId, ws);
 };
 

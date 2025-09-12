@@ -18,7 +18,7 @@ function prepareWhereQueryConditions(table, whereQueryData) {
     if (whereQueryData &&
         Object.keys(whereQueryData).length > 0 &&
         whereQueryData.columns.length > 0) {
-        const { columns, values } = whereQueryData;
+        const { columns, values, operators } = whereQueryData;
         const whereQueries = [];
         for (let i = 0; i < columns.length; i++) {
             const columnInfo = sql.raw(`${getTableName(table)}.${columns[i]}`);

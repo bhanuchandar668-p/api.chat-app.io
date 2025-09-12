@@ -100,9 +100,25 @@ async function getUserDetailsFromToken(c: Context) {
   return userDetails;
 }
 
+async function getUserInfoFromToken(authToken: string) {
+  const token =
+    authToken && authToken.startsWith("Bearer ")
+      ? authToken.slice(7).trim()
+      : authToken;
+
+  if (!token) {
+    throw new UnauthorizedException(TOKEN_MISSING);
+  }
+
+  const decodedPayload = await verifyJWTToken(token);
+
+  return decodedPayload.sub;
+}
+
 export {
   genJWTTokens,
   genJWTTokensForUser,
   getUserDetailsFromToken,
   verifyJWTToken,
+  getUserInfoFromToken,
 };

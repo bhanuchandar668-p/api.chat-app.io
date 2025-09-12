@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { app, injectWebSocket } from "./app.js";
 import { appConfig } from "./config/app-config.js";
 import { wsHandler } from "./ws/ws-handlers.js";
+import { injectSocket } from "./ws/socket-handler.js"; // your Socket.IO injector
 const port = appConfig.port;
 // ws endpoint
 app.get("/ws", wsHandler);
@@ -12,4 +13,5 @@ const server = serve({
     // eslint-disable-next-line no-console
     console.log(`Server is running on ${info.port}`);
 });
-injectWebSocket(server);
+injectSocket(server);
+// injectWebSocket(server);

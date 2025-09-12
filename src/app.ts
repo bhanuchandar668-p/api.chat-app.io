@@ -11,7 +11,9 @@ import { appConfig } from "./config/app-config.js";
 import type { Context } from "hono";
 import authRouter from "./routes/auth-router.js";
 import { createNodeWebSocket } from "@hono/node-ws";
+import userRouter from "./routes/user-router.js";
 import { clients } from "./ws/ws-clients.js";
+import messageRouter from "./routes/message-routes.js";
 
 const apiVer = appConfig.apiVersion;
 
@@ -30,14 +32,9 @@ app.get("/", (c) => {
 });
 
 // Routes
-
 app.route("/auth", authRouter);
-
-app.get("/ws-clients", async (c: Context) => {
-  const respClients = clients;
-
-  return c.json({ respClients });
-});
+app.route("/users", userRouter);
+app.route("/messages", messageRouter);
 
 app.onError((err: any, c: Context) => {
   c.status(err.status || DEF_STATUS_CODE);

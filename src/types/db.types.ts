@@ -1,13 +1,53 @@
 import type db from "../db/db-connection.js";
+import type {
+  ConversationParticipant,
+  ConversationParticipantTable,
+  NewConversationParticipant,
+} from "../db/schema/conversation-participants.js";
+import type {
+  Conversation,
+  ConversationTable,
+  NewConversation,
+} from "../db/schema/conversations.js";
+import type {
+  MessageStatus,
+  MessageStatusTable,
+  NewMessageStatus,
+} from "../db/schema/message-status.js";
+import type {
+  Message,
+  MessageTable,
+  NewMessage,
+} from "../db/schema/messages.js";
 import type { NewUser, User, UserTable } from "../db/schema/users.js";
 
-export type DBTable = UserTable;
+export type DBTable =
+  | UserTable
+  | ConversationTable
+  | MessageTable
+  | ConversationParticipantTable
+  | MessageStatusTable;
 
-export type DBTableRow = User;
+export type DBTableRow =
+  | User
+  | Conversation
+  | Message
+  | ConversationParticipant
+  | MessageStatus;
 
-export type DBNewRecord = NewUser;
+export type DBNewRecord =
+  | NewUser
+  | NewConversation
+  | NewMessage
+  | NewConversationParticipant
+  | NewMessageStatus;
 
-export type DBNewRecords = NewUser[];
+export type DBNewRecords =
+  | NewUser[]
+  | NewConversation[]
+  | NewMessage[]
+  | NewConversationParticipant[]
+  | NewMessageStatus[];
 
 export type DBTableColumns<T extends DBTableRow> = keyof T;
 
@@ -16,6 +56,7 @@ export type SortDirection = "asc" | "desc";
 export interface WhereQueryData<T extends DBTableRow> {
   columns: Array<keyof T>;
   values: any[];
+  operators?: any;
 }
 
 export interface OrderByQueryData<T extends DBTableRow> {

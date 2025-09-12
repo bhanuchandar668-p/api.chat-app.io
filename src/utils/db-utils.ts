@@ -43,7 +43,7 @@ function prepareWhereQueryConditions<R extends DBTableRow>(
     Object.keys(whereQueryData).length > 0 &&
     whereQueryData.columns.length > 0
   ) {
-    const { columns, values } = whereQueryData;
+    const { columns, values, operators } = whereQueryData;
     const whereQueries: SQL[] = [];
 
     for (let i = 0; i < columns.length; i++) {

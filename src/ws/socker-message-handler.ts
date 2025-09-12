@@ -7,11 +7,11 @@ import type {
   MessageSendPayload,
   TypingPayload,
 } from "../types/app.types.js";
-import { getClient } from "./ws-clients.js";
-import type { WSContext } from "hono/ws";
+import { getClient } from "./socket-clients.js";
+import type { Socket } from "socket.io";
 
 export async function handleIncomingMessage(
-  ws: WSContext,
+  socket: Socket,
   userId: string,
   message: WsMessage
 ) {
@@ -23,35 +23,36 @@ export async function handleIncomingMessage(
 
       const receiver = getClient(receiverId);
 
-      const resp = await insertNewDirectMessage(+userId, +receiverId, content);
+      // Insert message into DB
+    //   const resp = await insertNewDirectMessage(+userId, +receiverId, content);
 
-      if (receiver && receiver.readyState === WebSocket.OPEN) {
-        const payload = JSON.stringify({
+      // Send message to receiver if online
+      if (receiver) {
+        const payload = {
           type: "direct:message:new",
           payload: { from: userId, content },
-        });
+        };
+        receiver.emit("message", payload);
 
+        // Optionally update delivery status
         // updateDeliveryStatus(resp.id, "delivered");
-
-        receiver.send(payload);
       }
 
-      const acknowledge = JSON.stringify({
+      // Acknowledge to sender
+      const acknowledge = {
         type: "message:acknowledge",
         payload: { from: userId, ...message.payload },
-      });
-
-      ws.send(acknowledge);
+      };
+      socket.emit("message", acknowledge);
       break;
     }
 
     case "message:read": {
-      const payload = JSON.stringify({
+      const payload = {
         type: "message:read",
         payload: { userId, ...message.payload },
-      });
-
-      ws.send(payload);
+      };
+      socket.emit("message", payload);
       break;
     }
 
@@ -61,19 +62,19 @@ export async function handleIncomingMessage(
 
       const receiver = getClient(receiverId);
 
-      const payload = JSON.stringify({
-        type: message.type,
+      const payload = {
+        type: type,
         payload: { chatId, receiverId, from: userId },
-      });
+      };
 
-      if (receiver && receiver.readyState === WebSocket.OPEN) {
-        receiver.send(payload);
+      if (receiver) {
+        receiver.emit("message", payload);
       }
 
       break;
     }
 
     default:
-      ws.send(JSON.stringify({ type: "error", payload: "Unknown event type" }));
+      socket.emit("message", { type: "error", payload: "Unknown event type" });
   }
 }

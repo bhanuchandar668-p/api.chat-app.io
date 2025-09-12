@@ -67,4 +67,14 @@ async function getUserDetailsFromToken(c) {
     const { password, ...userDetails } = user ?? {};
     return userDetails;
 }
-export { genJWTTokens, genJWTTokensForUser, getUserDetailsFromToken, verifyJWTToken, };
+async function getUserInfoFromToken(authToken) {
+    const token = authToken && authToken.startsWith("Bearer ")
+        ? authToken.slice(7).trim()
+        : authToken;
+    if (!token) {
+        throw new UnauthorizedException(TOKEN_MISSING);
+    }
+    const decodedPayload = await verifyJWTToken(token);
+    return decodedPayload.sub;
+}
+export { genJWTTokens, genJWTTokensForUser, getUserDetailsFromToken, verifyJWTToken, getUserInfoFromToken, };

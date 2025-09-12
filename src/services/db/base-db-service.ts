@@ -390,6 +390,7 @@ async function getPaginatedRecords(
       initialQuery = initialQuery.orderBy(desc(columnExpression));
     }
   } else {
+    // @ts-ignore
     initialQuery = initialQuery.orderBy(desc(table.created_at));
   }
 

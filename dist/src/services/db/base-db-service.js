@@ -178,6 +178,7 @@ async function getPaginatedRecords(table, skip, limit, filters, sorting, project
         }
     }
     else {
+        // @ts-ignore
         initialQuery = initialQuery.orderBy(desc(table.created_at));
     }
     const result = await initialQuery.limit(limit).offset(skip);
