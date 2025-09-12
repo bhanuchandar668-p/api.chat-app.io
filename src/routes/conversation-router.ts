@@ -15,5 +15,6 @@ convoRouter.get(
   "/:id/messages",
   ...messageHandlers.getAllMessagesByConversationId
 );
+convoRouter.post("/:id/mark-read", ...messageHandlers.markMessagesAsRead);
 
 export default convoRouter;

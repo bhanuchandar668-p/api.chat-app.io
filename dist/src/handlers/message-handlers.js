@@ -11,7 +11,7 @@ export class MessageHandlers {
     getAllMessagesByConversationId = factory.createHandlers(isAuthorized, async (c) => {
         const conversationId = +c.req.param("id");
         const page = +c.req.query("page") || 1;
-        const pageSize = +c.req.query("page_size") || 50;
+        const pageSize = +c.req.query("limit") || 50;
         const authUser = c.get("user");
         const resp = await fetchAllMessagesWithStatus(conversationId, +authUser.id, page, pageSize);
         return sendResponse(c, 200, MESSAGES_FETCHED, resp);

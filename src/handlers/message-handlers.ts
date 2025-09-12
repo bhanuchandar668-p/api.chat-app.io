@@ -27,7 +27,7 @@ export class MessageHandlers {
     async (c: Context) => {
       const conversationId = +c.req.param("id")!;
       const page = +c.req.query("page")! || 1;
-      const pageSize = +c.req.query("page_size")! || 50;
+      const pageSize = +c.req.query("limit")! || 50;
 
       const authUser = c.get("user");
 
