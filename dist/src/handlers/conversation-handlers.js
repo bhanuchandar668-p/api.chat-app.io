@@ -11,7 +11,7 @@ export class ConversationHandlers {
         const authUser = c.get("user");
         const conversationExists = await checkConversationExists(authUser.id, +reqData.receiver_id);
         let conversationId = conversationExists[0]?.id;
-        if (!conversationExists) {
+        if (!conversationId) {
             const newConversation = await saveSingleRecord(conversations, {
                 is_group: false,
             });

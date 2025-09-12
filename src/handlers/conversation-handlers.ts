@@ -27,7 +27,7 @@ export class ConversationHandlers {
 
       let conversationId = conversationExists[0]?.id;
 
-      if (!conversationExists) {
+      if (!conversationId) {
         const newConversation = await saveSingleRecord(conversations, {
           is_group: false,
         });
