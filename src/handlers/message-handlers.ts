@@ -10,32 +10,32 @@ import {
   UNREAD_COUNT_FETCHED,
 } from "../constants/app-messages.js";
 import type { OrderByQueryData, WhereQueryData } from "../types/db.types.js";
-import { getPaginatedRecordsConditionally } from "../services/db/base-db-service.js";
+import {
+  getPaginatedRecordsConditionally,
+  updateMultipleRecordsByIds,
+} from "../services/db/base-db-service.js";
 import { messages, type Message } from "../db/schema/messages.js";
+import {
+  fetchAllMessagesWithStatus,
+  fetchUnreadMessages,
+} from "../services/db/conversation-service.js";
+import { message_status } from "../db/schema/message-status.js";
 
 export class MessageHandlers {
   getAllMessagesByConversationId = factory.createHandlers(
     isAuthorized,
     async (c: Context) => {
-      const conversationId = c.req.param("id")!;
+      const conversationId = +c.req.param("id")!;
       const page = +c.req.query("page")! || 1;
-      const pageSize = +c.req.query("page_size")! || 10;
+      const pageSize = +c.req.query("page_size")! || 50;
 
-      const whereQueryData: WhereQueryData<Message> = {
-        columns: ["conversation_id"],
-        values: [conversationId],
-      };
-      const orderByQueryData: OrderByQueryData<Message> = {
-        columns: ["created_at"],
-        values: ["desc"],
-      };
+      const authUser = c.get("user");
 
-      const resp = await getPaginatedRecordsConditionally(
-        messages,
+      const resp = await fetchAllMessagesWithStatus(
+        conversationId,
+        +authUser.id,
         page,
-        pageSize,
-        whereQueryData,
-        orderByQueryData
+        pageSize
       );
 
       return sendResponse(c, 200, MESSAGES_FETCHED, resp);
@@ -45,7 +45,22 @@ export class MessageHandlers {
   markMessagesAsRead = factory.createHandlers(
     isAuthorized,
     async (c: Context) => {
-      const conversationId = c.req.param("id")!;
+      const conversationId = +c.req.param("id")!;
+
+      const authUser = c.get("user");
+
+      const unreadMessages = await fetchUnreadMessages(
+        conversationId,
+        authUser.id
+      );
+
+      const messageIds = unreadMessages.map((message) => message.id);
+
+      if (unreadMessages.length > 0) {
+        await updateMultipleRecordsByIds(message_status, messageIds, {
+          status: "read",
+        });
+      }
 
       return sendResponse(c, 200, MESSAGES_MARKED_READ);
     }

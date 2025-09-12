@@ -28,7 +28,6 @@ export function injectSocket(server) {
         console.log(`User connected: ${userId}`);
         addClient(userId, socket);
         socket.on("message", async (data) => {
-            console.log("Received:", data);
             await handleIncomingMessage(socket, userId, data);
         });
         socket.on("disconnect", () => {

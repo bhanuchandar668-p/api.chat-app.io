@@ -38,7 +38,6 @@ export function injectSocket(server: ServerType | HttpServer) {
     addClient(userId, socket);
 
     socket.on("message", async (data) => {
-      console.log("Received:", data);
       await handleIncomingMessage(socket, userId, data);
     });
 

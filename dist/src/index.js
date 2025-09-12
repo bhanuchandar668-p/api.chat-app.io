@@ -1,11 +1,8 @@
 import { serve } from "@hono/node-server";
-import { app, injectWebSocket } from "./app.js";
+import { app } from "./app.js";
 import { appConfig } from "./config/app-config.js";
-import { wsHandler } from "./ws/ws-handlers.js";
 import { injectSocket } from "./ws/socket-handler.js"; // your Socket.IO injector
 const port = appConfig.port;
-// ws endpoint
-app.get("/ws", wsHandler);
 const server = serve({
     fetch: app.fetch,
     port,
@@ -14,4 +11,3 @@ const server = serve({
     console.log(`Server is running on ${info.port}`);
 });
 injectSocket(server);
-// injectWebSocket(server);

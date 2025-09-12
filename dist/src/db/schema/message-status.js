@@ -7,5 +7,6 @@ export const message_status = pgTable("message_status", {
     user_id: integer().references(() => users.id),
     status: varchar(), // sent | delivered | read
     created_at: timestamp().defaultNow(),
+    delivered_at: timestamp(),
     updated_at: timestamp().defaultNow(),
 });

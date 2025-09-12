@@ -56,7 +56,7 @@ export class ConversationHandlers {
         conversation_id: conversationId,
       };
 
-      return sendResponse(c, 200, "Conversation created", resp);
+      return sendResponse(c, 201, "Conversation created", resp);
     }
   );
 

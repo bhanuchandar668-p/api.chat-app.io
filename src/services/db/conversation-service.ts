@@ -1,10 +1,11 @@
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, isNull, or, desc } from "drizzle-orm";
 import { conversation_participants } from "../../db/schema/conversation-participants.js";
 import { conversations } from "../../db/schema/conversations.js";
 import { db } from "./base-db-service.js";
 import { alias } from "drizzle-orm/pg-core";
 import { messages } from "../../db/schema/messages.js";
 import { users } from "../../db/schema/users.js";
+import { message_status } from "../../db/schema/message-status.js";
 
 export async function checkConversationExists(
   senderId: number,
@@ -51,6 +52,7 @@ export async function getLastMessages(conversationIds: number[]) {
     .select({
       conversation_id: messages.conversation_id,
       content: messages.content,
+      time: messages.created_at,
     })
     .from(messages)
     .where(
@@ -80,4 +82,72 @@ export async function fetchConversationParticipants(convoIds: number[]) {
     );
 
   return participants;
+}
+
+export async function fetchUnreadMessages(
+  conversationId: number,
+  userId: number
+) {
+  const unreadMessages = await db
+    .select({
+      id: messages.id,
+    })
+    .from(messages)
+    .innerJoin(
+      conversation_participants,
+      eq(conversation_participants.conversation_id, messages.conversation_id)
+    )
+    .leftJoin(
+      message_status,
+      and(
+        eq(message_status.message_id, messages.id),
+        eq(message_status.user_id, userId)
+      )
+    )
+    .where(
+      and(
+        eq(messages.conversation_id, conversationId),
+        eq(conversation_participants.user_id, userId),
+        or(
+          isNull(message_status.status), // no status means unread
+          ne(message_status.status, "read") // or not read
+        ),
+        ne(messages.sender_id, userId) // exclude messages sent by the user
+      )
+    );
+
+  return unreadMessages;
+}
+
+export async function fetchAllMessagesWithStatus(
+  conversationId: number,
+  userId: number,
+  page: number,
+  limit: number
+) {
+  const offSet = (page - 1) * limit;
+
+  const records = await db
+    .select({
+      id: messages.id,
+      content: messages.content,
+      sender_id: messages.sender_id,
+      status: message_status.status, // sent | delivered | read
+      created_at: messages.created_at,
+      updated_at: message_status.updated_at,
+    })
+    .from(messages)
+    .leftJoin(
+      message_status,
+      and(
+        eq(message_status.message_id, messages.id),
+        eq(message_status.user_id, userId) // status for this specific user
+      )
+    )
+    .where(eq(messages.conversation_id, conversationId))
+    .orderBy(desc(messages.created_at))
+    .limit(limit)
+    .offset(offSet);
+
+  return records;
 }

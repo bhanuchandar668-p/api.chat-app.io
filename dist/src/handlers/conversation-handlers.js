@@ -32,7 +32,7 @@ export class ConversationHandlers {
         const resp = {
             conversation_id: conversationId,
         };
-        return sendResponse(c, 200, "Conversation created", resp);
+        return sendResponse(c, 201, "Conversation created", resp);
     });
     getAllConversations = factory.createHandlers(isAuthorized, async (c) => {
         const authUser = c.get("user");

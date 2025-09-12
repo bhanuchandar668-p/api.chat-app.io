@@ -1,6 +1,8 @@
 import {
   insertNewDirectMessage,
+  insertNewMessage,
   updateDeliveryStatus,
+  updateMessageAsSent,
 } from "../helpers/message-helper.js";
 import type {
   WsMessage,
@@ -23,8 +25,7 @@ export async function handleIncomingMessage(
 
       const receiver = getClient(receiverId);
 
-      // Insert message into DB
-    //   const resp = await insertNewDirectMessage(+userId, +receiverId, content);
+      const msgResp = await insertNewMessage(+userId, +receiverId, content);
 
       // Send message to receiver if online
       if (receiver) {
@@ -34,8 +35,9 @@ export async function handleIncomingMessage(
         };
         receiver.emit("message", payload);
 
-        // Optionally update delivery status
-        // updateDeliveryStatus(resp.id, "delivered");
+        updateMessageAsSent(msgResp.id, +userId);
+
+        updateDeliveryStatus(msgResp.id, "delivered");
       }
 
       // Acknowledge to sender
@@ -43,7 +45,7 @@ export async function handleIncomingMessage(
         type: "message:acknowledge",
         payload: { from: userId, ...message.payload },
       };
-      
+
       socket.emit("message", acknowledge);
       break;
     }

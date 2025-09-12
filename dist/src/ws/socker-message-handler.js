@@ -1,4 +1,4 @@
-import { insertNewDirectMessage, updateDeliveryStatus, } from "../helpers/message-helper.js";
+import { insertNewDirectMessage, insertNewMessage, updateDeliveryStatus, updateMessageAsSent, } from "../helpers/message-helper.js";
 import { getClient } from "./socket-clients.js";
 export async function handleIncomingMessage(socket, userId, message) {
     const type = message.type;
@@ -6,8 +6,7 @@ export async function handleIncomingMessage(socket, userId, message) {
         case "message:send": {
             const { receiverId, content } = message.payload;
             const receiver = getClient(receiverId);
-            // Insert message into DB
-            //   const resp = await insertNewDirectMessage(+userId, +receiverId, content);
+            const msgResp = await insertNewMessage(+userId, +receiverId, content);
             // Send message to receiver if online
             if (receiver) {
                 const payload = {
@@ -15,8 +14,8 @@ export async function handleIncomingMessage(socket, userId, message) {
                     payload: { from: userId, content },
                 };
                 receiver.emit("message", payload);
-                // Optionally update delivery status
-                // updateDeliveryStatus(resp.id, "delivered");
+                updateMessageAsSent(msgResp.id, +userId);
+                updateDeliveryStatus(msgResp.id, "delivered");
             }
             // Acknowledge to sender
             const acknowledge = {
