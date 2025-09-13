@@ -8,6 +8,7 @@ import authRouter from "./routes/auth-router.js";
 import { createNodeWebSocket } from "@hono/node-ws";
 import userRouter from "./routes/user-router.js";
 import convoRouter from "./routes/conversation-router.js";
+import msgRouter from "./routes/message-router.js";
 const apiVer = appConfig.apiVersion;
 const app = factory.createApp().basePath(`/v${apiVer}`);
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
@@ -22,6 +23,7 @@ app.get("/", (c) => {
 app.route("/auth", authRouter);
 app.route("/users", userRouter);
 app.route("/conversations", convoRouter);
+app.route("/messages", msgRouter);
 app.onError((err, c) => {
     c.status(err.status || DEF_STATUS_CODE);
     console.error(err);

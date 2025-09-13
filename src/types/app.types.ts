@@ -37,6 +37,8 @@ export interface WsMessage<T = any> {
 export interface MessageSendPayload {
   receiverId: string;
   content: any;
+  conversationId: string;
+  messageId: string;
 }
 
 export interface MessageReadPayload {

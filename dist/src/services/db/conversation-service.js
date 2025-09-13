@@ -91,3 +91,13 @@ export async function fetchAllMessagesWithStatus(conversationId, userId, page, l
         .offset(offSet);
     return records;
 }
+export async function fetchParticipantsForSingleConversation(conversationId) {
+    const participants = await db
+        .select({
+        id: conversation_participants.user_id,
+    })
+        .from(conversation_participants)
+        .innerJoin(users, eq(users.id, conversation_participants.user_id))
+        .where(eq(conversation_participants.conversation_id, conversationId));
+    return participants;
+}

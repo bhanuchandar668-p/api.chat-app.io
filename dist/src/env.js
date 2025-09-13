@@ -3,8 +3,12 @@ export const VEnvSchema = object({
     PORT: pipe(string(), transform((val) => Number(val))),
     NODE_ENV: string(),
     API_VERSION: string(),
-    DATABASE_URL: string(),
     JWT_SECRET: string(),
+    DB_NAME: string(),
+    DB_PASSWORD: string(),
+    DB_USER: string(),
+    DB_HOST: string(),
+    DB_PORT: pipe(string(), transform((val) => Number(val))),
 });
 // eslint-disable-next-line import/no-mutable-exports
 let envData;

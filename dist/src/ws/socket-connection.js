@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { addClient, removeClient } from "./socket-clients.js";
-import { handleIncomingMessage, handleIncomingTyping } from "./socket-handler.js";
+import { handleIncomingMessage } from "./socket-handler.js";
 import { getUserInfoFromToken } from "../utils/jwt-utils.js";
 let io = null;
 export function injectSocket(server) {
@@ -30,9 +30,6 @@ export function injectSocket(server) {
         socket.on("message", async (data) => {
             await handleIncomingMessage(socket, userId, data);
         });
-        // socket.on("typing", async (data) => {
-        //   await handleIncomingTyping(socket, userId, data);
-        // });
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${userId}`);
             removeClient(userId);

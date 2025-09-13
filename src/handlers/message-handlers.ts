@@ -12,6 +12,7 @@ import {
 import type { OrderByQueryData, WhereQueryData } from "../types/db.types.js";
 import {
   getPaginatedRecordsConditionally,
+  saveSingleRecord,
   updateMultipleRecordsByIds,
 } from "../services/db/base-db-service.js";
 import { messages, type Message } from "../db/schema/messages.js";
@@ -41,6 +42,22 @@ export class MessageHandlers {
       return sendResponse(c, 200, MESSAGES_FETCHED, resp);
     }
   );
+
+  createMessage = factory.createHandlers(isAuthorized, async (c: Context) => {
+    const reqData = await c.req.json();
+
+    const authUser = c.get("user");
+
+    const newRecord = {
+      sender_id: +authUser.id,
+      conversation_id: +reqData.conversation_id,
+      content: reqData.content,
+    };
+
+    const msgResp = await saveSingleRecord<Message>(messages, newRecord);
+
+    return sendResponse(c, 201, "Message created", msgResp);
+  });
 
   markMessagesAsRead = factory.createHandlers(
     isAuthorized,

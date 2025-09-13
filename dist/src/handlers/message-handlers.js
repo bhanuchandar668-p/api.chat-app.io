@@ -3,7 +3,7 @@ import isAuthorized from "../middlewares/is-authorized.js";
 import { sendResponse } from "../utils/resp-utils.js";
 import BadRequestException from "../exceptions/bad-request-exception.js";
 import { INVALID_USER_ID, MESSAGES_FETCHED, MESSAGES_MARKED_READ, UNREAD_COUNT_FETCHED, } from "../constants/app-messages.js";
-import { getPaginatedRecordsConditionally, updateMultipleRecordsByIds, } from "../services/db/base-db-service.js";
+import { getPaginatedRecordsConditionally, saveSingleRecord, updateMultipleRecordsByIds, } from "../services/db/base-db-service.js";
 import { messages } from "../db/schema/messages.js";
 import { fetchAllMessagesWithStatus, fetchUnreadMessages, } from "../services/db/conversation-service.js";
 import { message_status } from "../db/schema/message-status.js";
@@ -15,6 +15,17 @@ export class MessageHandlers {
         const authUser = c.get("user");
         const resp = await fetchAllMessagesWithStatus(conversationId, +authUser.id, page, pageSize);
         return sendResponse(c, 200, MESSAGES_FETCHED, resp);
+    });
+    createMessage = factory.createHandlers(isAuthorized, async (c) => {
+        const reqData = await c.req.json();
+        const authUser = c.get("user");
+        const newRecord = {
+            sender_id: +authUser.id,
+            conversation_id: +reqData.conversation_id,
+            content: reqData.content,
+        };
+        const msgResp = await saveSingleRecord(messages, newRecord);
+        return sendResponse(c, 201, "Message created", msgResp);
     });
     markMessagesAsRead = factory.createHandlers(isAuthorized, async (c) => {
         const conversationId = +c.req.param("id");

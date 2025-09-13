@@ -9,8 +9,15 @@ export const VEnvSchema = object({
   ),
   NODE_ENV: string(),
   API_VERSION: string(),
-  DATABASE_URL: string(),
   JWT_SECRET: string(),
+  DB_NAME: string(),
+  DB_PASSWORD: string(),
+  DB_USER: string(),
+  DB_HOST: string(),
+  DB_PORT: pipe(
+    string(),
+    transform((val: string) => Number(val))
+  ),
 });
 
 export type Env = InferOutput<typeof VEnvSchema>;

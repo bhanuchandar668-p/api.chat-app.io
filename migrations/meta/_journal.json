@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757435311739,
-      "tag": "0000_mixed_centennial",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1757694124892,
-      "tag": "0001_true_cannonball",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757706554575,
-      "tag": "0002_fixed_micromax",
+      "when": 1757751862659,
+      "tag": "0000_brainy_quasimodo",
       "breakpoints": true
     }
   ]

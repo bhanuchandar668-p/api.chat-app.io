@@ -28,8 +28,8 @@ export async function checkConversationExists(
         eq(cp2.conversation_id, conversations.id),
         eq(cp2.user_id, receiverId)
       )
-    )
-    // .where(ne(conversations.is_group, false));
+    );
+  // .where(ne(conversations.is_group, false));
 
   return conversation;
 }
@@ -153,4 +153,18 @@ export async function fetchAllMessagesWithStatus(
     .offset(offSet);
 
   return records;
+}
+
+export async function fetchParticipantsForSingleConversation(
+  conversationId: number
+) {
+  const participants = await db
+    .select({
+      id: conversation_participants.user_id,
+    })
+    .from(conversation_participants)
+    .innerJoin(users, eq(users.id, conversation_participants.user_id))
+    .where(eq(conversation_participants.conversation_id, conversationId));
+
+  return participants;
 }
