@@ -30,8 +30,7 @@ export class ConversationHandlers {
       );
 
       let conversationId = conversationExists[0]?.id;
-
-      console.log("conversationExists", conversationExists);
+      
 
       // if no conversation exists, create one
       if (!conversationId) {

@@ -20,13 +20,16 @@ export async function checkConversationExists(
     .from(conversations)
     .innerJoin(
       cp1,
-      and(eq(cp1.id, conversations.id), eq(cp1.user_id, senderId))
+      and(eq(cp1.conversation_id, conversations.id), eq(cp1.user_id, senderId))
     )
     .innerJoin(
       cp2,
-      and(eq(cp2.id, conversations.id), eq(cp2.user_id, receiverId))
+      and(
+        eq(cp2.conversation_id, conversations.id),
+        eq(cp2.user_id, receiverId)
+      )
     )
-    .where(ne(conversations.is_group, false));
+    // .where(ne(conversations.is_group, false));
 
   return conversation;
 }
