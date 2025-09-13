@@ -25,7 +25,7 @@ export async function handleIncomingMessage(
 
       const receiver = getClient(receiverId);
 
-      const msgResp = await insertNewMessage(+userId, +receiverId, content);
+      // const msgResp = await insertNewMessage(+userId, +receiverId, content);
 
       // Send message to receiver if online
       if (receiver) {
@@ -36,9 +36,9 @@ export async function handleIncomingMessage(
 
         receiver.emit("message", payload);
 
-        updateMessageAsSent(msgResp.id, +userId);
+        // updateMessageAsSent(msgResp.id, +userId);
 
-        updateDeliveryStatus(msgResp.id, "delivered");
+        // updateDeliveryStatus(msgResp.id, "delivered");
       }
 
       // Acknowledge to sender

@@ -6,7 +6,7 @@ export async function handleIncomingMessage(socket, userId, message) {
         case "message:send": {
             const { receiverId, content } = message.payload;
             const receiver = getClient(receiverId);
-            const msgResp = await insertNewMessage(+userId, +receiverId, content);
+            // const msgResp = await insertNewMessage(+userId, +receiverId, content);
             // Send message to receiver if online
             if (receiver) {
                 const payload = {
@@ -14,8 +14,8 @@ export async function handleIncomingMessage(socket, userId, message) {
                     payload: { from: userId, content },
                 };
                 receiver.emit("message", payload);
-                updateMessageAsSent(msgResp.id, +userId);
-                updateDeliveryStatus(msgResp.id, "delivered");
+                // updateMessageAsSent(msgResp.id, +userId);
+                // updateDeliveryStatus(msgResp.id, "delivered");
             }
             // Acknowledge to sender
             const acknowledge = {
