@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { addClient, removeClient } from "./socket-clients.js";
-import { handleIncomingMessage } from "./socket-handler.js";
+import { handleIncomingMessage, handleLastSeen } from "./socket-handler.js";
 import { getUserInfoFromToken } from "../utils/jwt-utils.js";
 let io = null;
 export function injectSocket(server) {
@@ -32,6 +32,8 @@ export function injectSocket(server) {
         });
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${userId}`);
+            if (userId)
+                handleLastSeen(+userId);
             removeClient(userId);
         });
         socket.on("error", (err) => {

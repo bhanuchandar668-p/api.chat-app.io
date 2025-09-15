@@ -9,6 +9,10 @@ export const VEnvSchema = object({
     DB_USER: string(),
     DB_HOST: string(),
     DB_PORT: pipe(string(), transform((val) => Number(val))),
+    AWS_S3_ACCESS_KEY_ID: string(),
+    AWS_S3_SECRET_ACCESS_KEY: string(),
+    AWS_S3_REGION: string(),
+    AWS_S3_BUCKET: string(),
 });
 // eslint-disable-next-line import/no-mutable-exports
 let envData;

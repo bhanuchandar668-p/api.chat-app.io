@@ -4,6 +4,8 @@ export const appConfig = {
   port: Number(envData.PORT!),
   apiVersion: envData.API_VERSION!,
   cookie_domain: "localhost",
+  default_profile_pic:
+    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
 };
 
 export const dbConfig = {
@@ -17,4 +19,11 @@ export const dbConfig = {
 export const jwtConfig = {
   secret: envData.JWT_SECRET!,
   expires_in: 60 * 60 * 24 * 30,
+};
+
+export const s3Config = {
+  accessKeyId: envData.AWS_S3_ACCESS_KEY_ID!,
+  secretAccessKey: envData.AWS_S3_SECRET_ACCESS_KEY!,
+  region: envData.AWS_S3_REGION!,
+  bucket: envData.AWS_S3_BUCKET!,
 };

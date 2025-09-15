@@ -1,5 +1,6 @@
 import { message_status } from "../db/schema/message-status.js";
 import { messages, type Message } from "../db/schema/messages.js";
+import { users } from "../db/schema/users.js";
 import {
   saveSingleRecord,
   updateRecordByColumnValue,
@@ -64,5 +65,20 @@ export async function updateMessageAsDelivered(id: number, userId: number) {
 
   await updateRecordByColumnValue(message_status, "id", id, {
     status: "delivered",
+    delivered_at: deliveredAt,
+  });
+}
+
+export async function updateMessageAsRead(id: number, userId: number) {
+  await updateRecordByColumnValue(message_status, "id", id, {
+    status: "read",
+  });
+}
+
+export async function updateLastSeen(userId: number) {
+  const lastSeenAt = new Date();
+
+  await updateRecordByColumnValue(users, "id", userId, {
+    last_seen_at: lastSeenAt,
   });
 }

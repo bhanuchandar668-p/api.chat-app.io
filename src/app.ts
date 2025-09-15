@@ -10,18 +10,14 @@ import factory from "./factory.js";
 import { appConfig } from "./config/app-config.js";
 import type { Context } from "hono";
 import authRouter from "./routes/auth-router.js";
-import { createNodeWebSocket } from "@hono/node-ws";
 import userRouter from "./routes/user-router.js";
 import convoRouter from "./routes/conversation-router.js";
 import msgRouter from "./routes/message-router.js";
+import fileRouter from "./routes/file-router.js";
 
 const apiVer = appConfig.apiVersion;
 
 const app = factory.createApp().basePath(`/v${apiVer}`);
-
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({
-  app,
-});
 
 app.use("/*", cors());
 
@@ -36,6 +32,7 @@ app.route("/auth", authRouter);
 app.route("/users", userRouter);
 app.route("/conversations", convoRouter);
 app.route("/messages", msgRouter);
+app.route("/files", fileRouter);
 
 app.onError((err: any, c: Context) => {
   c.status(err.status || DEF_STATUS_CODE);
@@ -56,4 +53,4 @@ app.onError((err: any, c: Context) => {
 
 app.notFound(notFoundResp);
 
-export { app, injectWebSocket, upgradeWebSocket };
+export default app;

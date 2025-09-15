@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 
-import { app } from "./app.js";
+import app from "./app.js";
 import { appConfig } from "./config/app-config.js";
 
 import { injectSocket } from "./ws/socket-connection.js"; // your Socket.IO injector

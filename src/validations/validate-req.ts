@@ -4,6 +4,10 @@ import UnprocessableContentException from "../exceptions/unprocessable-content-e
 import type { AppActivity, ValidatedRequest } from "../types/app.types.js";
 import { VSignUpSchema } from "./schema/v-signup-schema.js";
 import { VSignInSchema } from "./schema/v-signin-schema.js";
+import {
+  VDownloadFileSchema,
+  VUploadFileSchema,
+} from "./schema/v-file-schema.js";
 
 export async function validateReq<T extends ValidatedRequest>(
   actionType: AppActivity,
@@ -18,6 +22,12 @@ export async function validateReq<T extends ValidatedRequest>(
       break;
     case "auth:signin":
       schema = VSignInSchema;
+      break;
+    case "file:upload":
+      schema = VUploadFileSchema;
+      break;
+    case "file:download":
+      schema = VDownloadFileSchema;
       break;
     default:
   }

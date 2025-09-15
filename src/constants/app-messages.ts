@@ -82,3 +82,11 @@ export const INVALID_USER_ID = "Invalid user id";
 export const MESSAGES_FETCHED = "All messages fetched successfully";
 export const UNREAD_COUNT_FETCHED = "Unread count fetched successfully";
 export const MESSAGES_MARKED_READ = "Messages marked as read successfully";
+
+export const FILE_NAME_IS_REQ = "File name is required";
+export const FILE_NAME_IS_STR = "File name must be a string";
+export const FILE_KEY_IS_REQ = "File key is required";
+export const FILE_KEY_IS_STR = "File key must be a string";
+export const FILE_URL_GENERATED = "File upload URL(s) generated successfully";
+export const FILE_DOWNLOAD_URL_GENERATED =
+  "File download URL generated successfully";
