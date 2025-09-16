@@ -146,7 +146,7 @@ async function handleGroupMessage({
 }
 
 async function handleMessageRead(messageId: string, readerId: string) {
-  await updateMessageAsRead(+messageId, +readerId);
+  // await updateMessageAsRead(+messageId, +readerId);
 }
 
 async function handleTypingEvent(

@@ -86,7 +86,7 @@ async function handleGroupMessage({ conversationId, senderId, content, messageId
     }
 }
 async function handleMessageRead(messageId, readerId) {
-    await updateMessageAsRead(+messageId, +readerId);
+    // await updateMessageAsRead(+messageId, +readerId);
 }
 async function handleTypingEvent(userId, type, conversationId) {
     // Notify all participants
