@@ -119,14 +119,14 @@ export async function fetchAllMessagesWithStatus(conversationId, userId, page, l
     return messageRec.map((msg) => {
         return {
             id: msg.id,
-            content: msg.content,
-            sender_id: msg.sender_id,
-            sender_first_name: msg.user?.first_name ?? null,
+            content: msg?.content,
+            sender_id: msg?.sender_id,
+            sender_first_name: msg?.user?.first_name ?? null,
             sender_last_name: msg.user?.last_name ?? null,
-            sender_email: msg.user?.email ?? null,
+            sender_email: msg?.user?.email ?? null,
             status: msg?.message_status?.status, // sent | delivered | read
-            created_at: msg.created_at,
-            updated_at: msg.message_status.updated_at,
+            created_at: msg?.created_at,
+            updated_at: msg?.message_status?.updated_at,
         };
     });
 }
