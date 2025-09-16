@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   boolean,
   pgTable,
@@ -5,6 +6,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { conversation_participants } from "./conversation-participants.js";
 
 export const conversations = pgTable("conversations", {
   id: serial().primaryKey(),
@@ -17,3 +19,7 @@ export const conversations = pgTable("conversations", {
 export type Conversation = typeof conversations.$inferSelect;
 export type NewConversation = typeof conversations.$inferInsert;
 export type ConversationTable = typeof conversations;
+
+export const conversationRelations = relations(conversations, ({ many }) => ({
+  participants: many(conversation_participants),
+}));

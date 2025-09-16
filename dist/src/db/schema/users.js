@@ -1,4 +1,6 @@
+import { relations } from "drizzle-orm";
 import { index, pgTable, serial, timestamp, varchar, } from "drizzle-orm/pg-core";
+import { messages } from "./messages.js";
 export const users = pgTable("users", {
     id: serial().primaryKey(),
     first_name: varchar().notNull(),
@@ -13,3 +15,9 @@ export const users = pgTable("users", {
     created_at: timestamp().defaultNow(),
     updated_at: timestamp().defaultNow(),
 }, (t) => [index("email_idx").on(t.email)]);
+export const userRelations = relations(users, ({ one }) => ({
+    messages: one(messages, {
+        fields: [users.id],
+        references: [messages.sender_id],
+    }),
+}));

@@ -54,6 +54,12 @@ async function handleIncomingMessage(
 
     case "message:read":
       await handleMessageRead(messageId, receiverId);
+
+      socket.emit("message", {
+        type: "message:read:ack",
+        payload: { messageId },
+      });
+
       break;
 
     case "typing:start":
@@ -156,6 +162,7 @@ async function handleTypingEvent(
   for (const p of participants) {
     if (p.id && p.id !== +userId) {
       const client = getClient(p.id.toString());
+
       if (client) {
         client.emit("message", {
           type,
@@ -171,6 +178,5 @@ async function handleLastSeen(userId: number) {
 
   await updateLastSeen(userId);
 }
-
 
 export { handleIncomingMessage, handleLastSeen };

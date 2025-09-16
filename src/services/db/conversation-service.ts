@@ -1,4 +1,4 @@
-import { eq, and, ne, isNull, or, desc } from "drizzle-orm";
+import { eq, and, ne, isNull, or, desc, inArray } from "drizzle-orm";
 import { conversation_participants } from "../../db/schema/conversation-participants.js";
 import { conversations } from "../../db/schema/conversations.js";
 import { db } from "./base-db-service.js";
@@ -51,40 +51,73 @@ export async function getConversations(userId: number) {
 }
 
 export async function getLastMessages(conversationIds: number[]) {
-  const lastMessages = await db
-    .select({
-      conversation_id: messages.conversation_id,
-      content: messages.content,
-      time: messages.created_at,
-    })
-    .from(messages)
-    .where(
-      conversationIds.length
-        ? eq(messages.conversation_id, conversationIds[0])
-        : undefined
-    );
+  if (!conversationIds.length) {
+    return [];
+  }
 
-  return lastMessages;
+  const messagesR = await db.query.messages.findMany({
+    where: inArray(messages.conversation_id, conversationIds),
+    with: {
+      conversation: {
+        columns: {
+          id: true,
+        },
+      },
+    },
+    orderBy: desc(messages.created_at),
+    limit: 1,
+  });
+
+  return messagesR.map((message) => ({
+    id: message.id,
+    conversation_id: message.conversation_id,
+    content: message.content,
+    time: message.created_at,
+  }));
 }
 
-export async function fetchConversationParticipants(convoIds: number[]) {
-  const participants = await db
-    .select({
-      conversation_id: conversation_participants.conversation_id,
-      user_id: conversation_participants.user_id,
-      first_name: users.first_name,
-      last_name: users.last_name,
-      email: users.email,
-    })
-    .from(conversation_participants)
-    .innerJoin(users, eq(users.id, conversation_participants.user_id))
-    .where(
-      and(
-        eq(conversation_participants.conversation_id, convoIds[0]) // ❌ single convo only
-      )
-    );
+export async function fetchConversationParticipants(
+  convoIds: number[],
+  loggedInUserId: number
+) {
+  if (!convoIds.length) {
+    return [];
+  }
 
-  return participants;
+  const participants = await db.query.conversation_participants.findMany({
+    where: (participant, { and, inArray, ne }) =>
+      and(
+        inArray(participant.conversation_id, convoIds),
+        ne(participant.user_id, loggedInUserId)
+      ),
+    with: {
+      user: {
+        columns: {
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  const uniqueParticipants = participants.filter(
+    (p, index, self) =>
+      index ===
+      self.findIndex(
+        (x) =>
+          x.conversation_id === p.conversation_id && x.user_id === p.user_id
+      )
+  );
+
+  return uniqueParticipants.map((participant) => ({
+    id: participant.id,
+    conversation_id: participant.conversation_id,
+    user_id: participant.user_id,
+    first_name: participant.user?.first_name ?? null,
+    last_name: participant.user?.last_name ?? null,
+    email: participant.user?.email ?? null,
+  }));
 }
 
 export async function fetchUnreadMessages(
@@ -130,29 +163,41 @@ export async function fetchAllMessagesWithStatus(
 ) {
   const offSet = (page - 1) * limit;
 
-  const records = await db
-    .select({
-      id: messages.id,
-      content: messages.content,
-      sender_id: messages.sender_id,
-      status: message_status.status, // sent | delivered | read
-      created_at: messages.created_at,
-      updated_at: message_status.updated_at,
-    })
-    .from(messages)
-    .leftJoin(
-      message_status,
-      and(
-        eq(message_status.message_id, messages.id),
-        eq(message_status.user_id, userId) // status for this specific user
-      )
-    )
-    .where(eq(messages.conversation_id, conversationId))
-    .orderBy(desc(messages.created_at))
-    .limit(limit)
-    .offset(offSet);
+  const messageRec = await db.query.messages.findMany({
+    where: eq(messages.conversation_id, conversationId),
+    with: {
+      user: {
+        columns: {
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+      message_status: {
+        columns: {
+          status: true,
+          updated_at: true,
+        },
+      },
+    },
+    orderBy: desc(messages.created_at),
+    limit,
+    offset: offSet,
+  });
 
-  return records;
+  return messageRec.map((msg) => {
+    return {
+      id: msg.id,
+      content: msg.content,
+      sender_id: msg.sender_id,
+      sender_first_name: msg.user?.first_name ?? null,
+      sender_last_name: msg.user?.last_name ?? null,
+      sender_email: msg.user?.email ?? null,
+      status: msg?.message_status?.status, // sent | delivered | read
+      created_at: msg.created_at,
+      updated_at: msg.message_status.updated_at,
+    };
+  });
 }
 
 export async function fetchParticipantsForSingleConversation(

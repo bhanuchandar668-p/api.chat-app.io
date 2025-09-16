@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   index,
   pgTable,
@@ -5,6 +6,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
+import { messages } from "./messages.js";
 
 export const users = pgTable(
   "users",
@@ -28,3 +30,10 @@ export const users = pgTable(
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type UserTable = typeof users;
+
+export const userRelations = relations(users, ({ one }) => ({
+  messages: one(messages, {
+    fields: [users.id],
+    references: [messages.sender_id],
+  }),
+}));

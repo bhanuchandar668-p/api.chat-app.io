@@ -30,7 +30,6 @@ export class ConversationHandlers {
       );
 
       let conversationId = conversationExists[0]?.id;
-      
 
       // if no conversation exists, create one
       if (!conversationId) {
@@ -69,29 +68,33 @@ export class ConversationHandlers {
 
       const convos = await getConversations(+authUser.id);
 
-      // fetch last messages for each convo
       const convoIds = convos.map((c) => c.id);
 
-      const participants = await fetchConversationParticipants(convoIds);
+      const participants = await fetchConversationParticipants(
+        convoIds,
+        +authUser.id
+      );
 
       const lastMessages = await getLastMessages(convoIds);
 
-      const result = convos.map((c) => {
-        const convoParticipants = participants.filter(
-          (p) => p.conversation_id === c.id
-        );
+      const result = convos
+        .map((c) => {
+          const convoParticipants = participants.filter(
+            (p) => p.conversation_id === c.id
+          );
 
-        const filteredParticipant = convoParticipants.find(
-          (p) => p.user_id !== authUser.id
-        );
+          const filteredParticipant = convoParticipants.find(
+            (p) => p.user_id !== authUser.id
+          );
 
-        return {
-          ...c,
-          receiver: filteredParticipant, // exclude current user
-          last_message:
-            lastMessages.find((m) => m.conversation_id === c.id) || null,
-        };
-      });
+          return {
+            ...c,
+            receiver: filteredParticipant,
+            last_message:
+              lastMessages.find((m) => m.conversation_id === c.id) || null,
+          };
+        })
+        .filter((r) => r.last_message !== null);
 
       return sendResponse(c, 200, "Conversations fetched", result);
     }

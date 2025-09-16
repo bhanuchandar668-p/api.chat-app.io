@@ -33,6 +33,10 @@ async function handleIncomingMessage(socket, userId, message) {
             break;
         case "message:read":
             await handleMessageRead(messageId, receiverId);
+            socket.emit("message", {
+                type: "message:read:ack",
+                payload: { messageId },
+            });
             break;
         case "typing:start":
         case "typing:stop":
