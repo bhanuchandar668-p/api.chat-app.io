@@ -436,7 +436,7 @@ async function updateRecordByMultipleColumnValues<
   C extends keyof R = keyof R
 >(
   table: DBTable,
-  columns: C[],
+  columns: any[],
   values: any[],
   record: UpdateRecordData<R>,
   id?: number,

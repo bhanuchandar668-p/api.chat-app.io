@@ -1,7 +1,7 @@
 import { message_status } from "../db/schema/message-status.js";
 import { messages } from "../db/schema/messages.js";
 import { users } from "../db/schema/users.js";
-import { saveSingleRecord, updateRecordByColumnValue, updateRecordById, } from "../services/db/base-db-service.js";
+import { saveSingleRecord, updateRecordByColumnValue, updateRecordById, updateRecordByMultipleColumnValues, } from "../services/db/base-db-service.js";
 export async function insertNewDirectMessage(senderId, receiverId, message) {
     const msg = {
         sender_id: senderId,
@@ -46,13 +46,23 @@ export async function updateMessageAsDelivered(id, userId) {
     });
 }
 export async function updateMessageAsRead(id, userId) {
-    await updateRecordByColumnValue(message_status, "id", id, {
-        status: "read",
-    });
+    try {
+        await updateRecordByMultipleColumnValues(message_status, ["message_id", "user_id"], [id, userId], {
+            status: "read",
+        });
+    }
+    catch (error) {
+        throw error;
+    }
 }
 export async function updateLastSeen(userId) {
     const lastSeenAt = new Date();
-    await updateRecordByColumnValue(users, "id", userId, {
-        last_seen_at: lastSeenAt,
-    });
+    try {
+        await updateRecordByColumnValue(users, "id", userId, {
+            last_seen_at: lastSeenAt,
+        });
+    }
+    catch (err) {
+        throw err;
+    }
 }
