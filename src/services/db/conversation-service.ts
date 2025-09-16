@@ -6,6 +6,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { messages } from "../../db/schema/messages.js";
 import { users } from "../../db/schema/users.js";
 import { message_status } from "../../db/schema/message-status.js";
+import type { PaginationInfo } from "../../types/db.types.js";
 
 export async function checkConversationExists(
   senderId: number,
@@ -185,7 +186,12 @@ export async function fetchAllMessagesWithStatus(
     offset: offSet,
   });
 
-  return messageRec.map((msg) => {
+  const totalRecords = await db.$count(
+    messages,
+    eq(messages.conversation_id, conversationId)
+  );
+
+  const finalResp = messageRec.map((msg) => {
     return {
       id: msg.id,
       content: msg?.content,
@@ -198,6 +204,29 @@ export async function fetchAllMessagesWithStatus(
       updated_at: msg?.message_status?.updated_at,
     };
   });
+
+  const total_pages = Math.ceil(totalRecords / limit) || 1;
+
+  const pagination_info: PaginationInfo = {
+    total_records: totalRecords,
+    total_pages,
+    page_size: limit,
+    current_page: page > total_pages ? total_pages : page,
+    next_page: page >= total_pages ? null : page + 1,
+    prev_page: page <= 1 ? null : page - 1,
+  };
+
+  if (totalRecords === 0) {
+    return {
+      pagination_info,
+      records: [],
+    };
+  }
+
+  return {
+    pagination_info,
+    records: finalResp,
+  };
 }
 
 export async function fetchParticipantsForSingleConversation(
