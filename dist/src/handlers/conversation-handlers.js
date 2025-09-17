@@ -38,10 +38,11 @@ export class ConversationHandlers {
     getAllConversations = factory.createHandlers(isAuthorized, async (c) => {
         const authUser = c.get("user");
         const convos = await getConversations(+authUser.id);
-        const convoIds = convos.map((c) => c.id);
+        const uniqueConvos = Array.from(new Map(convos.map((c) => [c.id, c])).values());
+        const convoIds = uniqueConvos.map((c) => c.id);
         const participants = await fetchConversationParticipants(convoIds, +authUser.id);
         const lastMessages = await getLastMessages(convoIds);
-        const result = convos
+        const result = uniqueConvos
             .map((c) => {
             const convoParticipants = participants.filter((p) => p.conversation_id === c.id);
             const filteredParticipant = convoParticipants.find((p) => p.user_id !== authUser.id);

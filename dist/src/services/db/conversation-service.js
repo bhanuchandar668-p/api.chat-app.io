@@ -33,7 +33,7 @@ export async function getLastMessages(conversationIds) {
     if (!conversationIds.length) {
         return [];
     }
-    const messagesR = await db.query.messages.findMany({
+    let messagesR = await db.query.messages.findMany({
         where: inArray(messages.conversation_id, conversationIds),
         with: {
             conversation: {
@@ -43,14 +43,22 @@ export async function getLastMessages(conversationIds) {
             },
         },
         orderBy: desc(messages.created_at),
-        limit: 1,
     });
-    return messagesR.map((message) => ({
-        id: message.id,
-        conversation_id: message.conversation_id,
-        content: message.content,
-        time: message.created_at,
-    }));
+    // Keep only the first message for each conversation_id
+    const lastMessagesMap = new Map();
+    for (const msg of messagesR) {
+        if (msg &&
+            msg.conversation_id &&
+            !lastMessagesMap.has(msg.conversation_id)) {
+            lastMessagesMap.set(msg.conversation_id, {
+                id: msg.id,
+                conversation_id: msg.conversation_id,
+                content: msg.content,
+                time: msg.created_at,
+            });
+        }
+    }
+    return Array.from(lastMessagesMap.values());
 }
 export async function fetchConversationParticipants(convoIds, loggedInUserId) {
     if (!convoIds.length) {

@@ -68,7 +68,11 @@ export class ConversationHandlers {
 
       const convos = await getConversations(+authUser.id);
 
-      const convoIds = convos.map((c) => c.id);
+      const uniqueConvos = Array.from(
+        new Map(convos.map((c) => [c.id, c])).values()
+      );
+
+      const convoIds = uniqueConvos.map((c) => c.id);
 
       const participants = await fetchConversationParticipants(
         convoIds,
@@ -77,7 +81,7 @@ export class ConversationHandlers {
 
       const lastMessages = await getLastMessages(convoIds);
 
-      const result = convos
+      const result = uniqueConvos
         .map((c) => {
           const convoParticipants = participants.filter(
             (p) => p.conversation_id === c.id
