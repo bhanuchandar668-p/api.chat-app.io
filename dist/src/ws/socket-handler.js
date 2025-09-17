@@ -1,30 +1,20 @@
-import { updateDeliveryStatus, updateLastSeen, updateMessageAsRead, updateMessageAsSent, } from "../helpers/message-helper.js";
+import { insertNewMessage, updateDeliveryStatus, updateLastSeen, updateMessageAsRead, updateMessageAsSent, } from "../helpers/message-helper.js";
 import { fetchParticipantsForSingleConversation } from "../services/db/conversation-service.js";
 import { getClient } from "./socket-clients.js";
 async function handleIncomingMessage(socket, userId, message) {
     const { type, payload } = message;
-    const messageId = payload?.messageId;
+    let messageId = payload?.messageId;
     const conversationId = payload?.conversationId;
     const receiverId = payload?.receiverId;
     switch (type) {
         case "message:send":
             const { content, isGroup } = payload;
+            const message = await insertNewMessage(conversationId, +userId, content);
             if (isGroup) {
-                await handleGroupMessage({
-                    conversationId,
-                    senderId: userId,
-                    content,
-                    messageId,
-                });
+                await handleGroupMessage(+conversationId, +userId, content, message.id);
             }
             else {
-                await handleDirectMessage({
-                    receiverId,
-                    senderId: userId,
-                    content,
-                    messageId,
-                    conversationId,
-                });
+                await handleDirectMessage(receiverId, userId, content, messageId, conversationId);
             }
             socket.emit("message", {
                 type: isGroup ? "group:message:ack" : "direct:message:ack",
@@ -50,7 +40,7 @@ async function handleIncomingMessage(socket, userId, message) {
             break;
     }
 }
-async function handleDirectMessage({ receiverId, senderId, content, messageId, conversationId, }) {
+async function handleDirectMessage(receiverId, senderId, content, messageId, conversationId) {
     const receiver = getClient(receiverId);
     if (receiver) {
         const payload = {
@@ -64,7 +54,7 @@ async function handleDirectMessage({ receiverId, senderId, content, messageId, c
         }
     }
 }
-async function handleGroupMessage({ conversationId, senderId, content, messageId, }) {
+async function handleGroupMessage(conversationId, senderId, content, messageId) {
     // Fetch all group participants from DB
     const participants = await fetchParticipantsForSingleConversation(+conversationId);
     for (const participant of participants) {

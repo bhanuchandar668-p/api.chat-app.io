@@ -1,4 +1,5 @@
 import {
+  insertNewMessage,
   updateDeliveryStatus,
   updateLastSeen,
   updateMessageAsRead,
@@ -16,7 +17,7 @@ async function handleIncomingMessage(
 ) {
   const { type, payload } = message;
 
-  const messageId = payload?.messageId;
+  let messageId = payload?.messageId;
 
   const conversationId = payload?.conversationId;
 
@@ -28,21 +29,18 @@ async function handleIncomingMessage(
         isGroup?: boolean;
       };
 
+      const message = await insertNewMessage(conversationId, +userId, content);
+
       if (isGroup) {
-        await handleGroupMessage({
-          conversationId,
-          senderId: userId,
-          content,
-          messageId,
-        });
+        await handleGroupMessage(+conversationId, +userId, content, message.id);
       } else {
-        await handleDirectMessage({
+        await handleDirectMessage(
           receiverId,
-          senderId: userId,
+          userId,
           content,
           messageId,
-          conversationId,
-        });
+          conversationId
+        );
       }
 
       socket.emit("message", {
@@ -76,19 +74,13 @@ async function handleIncomingMessage(
   }
 }
 
-async function handleDirectMessage({
-  receiverId,
-  senderId,
-  content,
-  messageId,
-  conversationId,
-}: {
-  receiverId: string;
-  senderId: string;
-  content: string;
-  messageId?: string;
-  conversationId: string;
-}) {
+async function handleDirectMessage(
+  receiverId: string,
+  senderId: string | number,
+  content: string,
+  messageId: string | number,
+  conversationId: string | number
+) {
   const receiver = getClient(receiverId);
 
   if (receiver) {
@@ -106,17 +98,12 @@ async function handleDirectMessage({
   }
 }
 
-async function handleGroupMessage({
-  conversationId,
-  senderId,
-  content,
-  messageId,
-}: {
-  conversationId: string;
-  senderId: string;
-  content: string;
-  messageId?: string;
-}) {
+async function handleGroupMessage(
+  conversationId: string | number,
+  senderId: string | number,
+  content: string,
+  messageId: string | number
+) {
   // Fetch all group participants from DB
   const participants = await fetchParticipantsForSingleConversation(
     +conversationId
