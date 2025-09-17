@@ -98,7 +98,20 @@ export class ConversationHandlers {
               lastMessages.find((m) => m.conversation_id === c.id) || null,
           };
         })
-        .filter((r) => r.last_message !== null);
+        .filter((r) => r.last_message !== null)
+        .map((r) => {
+          if (!r.receiver) {
+            r.receiver = {
+              first_name: authUser.first_name,
+              conversation_id: r.id,
+              user_id: authUser.id,
+              last_name: authUser.last_name,
+              email: authUser.email,
+            };
+          }
+
+          return r;
+        });
 
       return sendResponse(c, 200, "Conversations fetched", result);
     }

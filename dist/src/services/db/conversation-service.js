@@ -79,7 +79,6 @@ export async function fetchConversationParticipants(convoIds, loggedInUserId) {
     const uniqueParticipants = participants.filter((p, index, self) => index ===
         self.findIndex((x) => x.conversation_id === p.conversation_id && x.user_id === p.user_id));
     return uniqueParticipants.map((participant) => ({
-        id: participant.id,
         conversation_id: participant.conversation_id,
         user_id: participant.user_id,
         first_name: participant.user?.first_name ?? null,

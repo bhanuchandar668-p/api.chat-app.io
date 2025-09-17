@@ -123,7 +123,6 @@ export async function fetchConversationParticipants(
   );
 
   return uniqueParticipants.map((participant) => ({
-    id: participant.id,
     conversation_id: participant.conversation_id,
     user_id: participant.user_id,
     first_name: participant.user?.first_name ?? null,
