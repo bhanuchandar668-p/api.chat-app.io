@@ -38,7 +38,7 @@ async function handleIncomingMessage(
           receiverId,
           userId,
           content,
-          messageId,
+          message.id,
           conversationId
         );
       }
@@ -92,8 +92,13 @@ async function handleDirectMessage(
     receiver.emit("message", payload);
 
     if (messageId) {
-      await updateMessageAsSent(+messageId, +senderId);
-      await updateDeliveryStatus(+messageId, "delivered");
+      try {
+        await updateMessageAsSent(+messageId, +senderId);
+
+        await updateDeliveryStatus(+messageId, "delivered");
+      } catch (err) {
+        throw err;
+      }
     }
   }
 }

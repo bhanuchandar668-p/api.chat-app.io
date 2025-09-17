@@ -14,7 +14,7 @@ async function handleIncomingMessage(socket, userId, message) {
                 await handleGroupMessage(+conversationId, +userId, content, message.id);
             }
             else {
-                await handleDirectMessage(receiverId, userId, content, messageId, conversationId);
+                await handleDirectMessage(receiverId, userId, content, message.id, conversationId);
             }
             socket.emit("message", {
                 type: isGroup ? "group:message:ack" : "direct:message:ack",
@@ -49,8 +49,13 @@ async function handleDirectMessage(receiverId, senderId, content, messageId, con
         };
         receiver.emit("message", payload);
         if (messageId) {
-            await updateMessageAsSent(+messageId, +senderId);
-            await updateDeliveryStatus(+messageId, "delivered");
+            try {
+                await updateMessageAsSent(+messageId, +senderId);
+                await updateDeliveryStatus(+messageId, "delivered");
+            }
+            catch (err) {
+                throw err;
+            }
         }
     }
 }
