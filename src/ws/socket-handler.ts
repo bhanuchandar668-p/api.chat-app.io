@@ -49,11 +49,6 @@ async function handleIncomingMessage(
         );
       }
 
-      socket.emit("message", {
-        type: isGroup ? "group:message:ack" : "direct:message:ack",
-        payload: { messageId: message.id, status: "delivered" },
-      });
-
       break;
 
     case "message:read":
