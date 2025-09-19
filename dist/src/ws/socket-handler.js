@@ -66,6 +66,7 @@ async function handleDirectMessage(receiverId, senderId, content, messageId, con
             type: "direct:message:new",
             payload: { from: senderId, content, messageId, conversationId },
         };
+        console.log("Message sent to receiver");
         receiver.emit("message", payload);
         if (messageId) {
             try {

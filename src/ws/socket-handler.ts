@@ -113,6 +113,8 @@ async function handleDirectMessage(
       payload: { from: senderId, content, messageId, conversationId },
     };
 
+    console.log("Message sent to receiver");
+
     receiver.emit("message", payload);
 
     if (messageId) {
