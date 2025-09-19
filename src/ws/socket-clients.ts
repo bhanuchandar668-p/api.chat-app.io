@@ -14,5 +14,7 @@ export const removeClient = (userId: string) => {
 };
 
 export const getClient = (userId: string) => {
+  if (!userId) return null;
+
   return clients.get(userId.toString());
 };

@@ -9,5 +9,7 @@ export const removeClient = (userId) => {
     clients.delete(userId.toString());
 };
 export const getClient = (userId) => {
+    if (!userId)
+        return null;
     return clients.get(userId.toString());
 };
