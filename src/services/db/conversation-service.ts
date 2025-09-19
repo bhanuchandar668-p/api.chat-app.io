@@ -46,7 +46,8 @@ export async function getConversations(userId: number) {
       conversation_participants,
       eq(conversation_participants.conversation_id, conversations.id)
     )
-    .where(eq(conversation_participants.user_id, userId));
+    .where(eq(conversation_participants.user_id, userId))
+    .orderBy(desc(conversations.created_at));
 
   return convos;
 }

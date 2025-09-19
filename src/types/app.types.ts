@@ -40,7 +40,7 @@ export type WsEventType =
   | "typing:stop";
 
 export interface WsMessage<T = any> {
-  type: WsEventType;
+  type: any;
   payload: T;
 }
 

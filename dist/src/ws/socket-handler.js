@@ -1,4 +1,6 @@
+import { users } from "../db/schema/users.js";
 import { insertNewMessage, updateDeliveryStatus, updateLastSeen, updateMessageAsRead, updateMessageAsSent, } from "../helpers/message-helper.js";
+import { getRecordById } from "../services/db/base-db-service.js";
 import { fetchParticipantsForSingleConversation } from "../services/db/conversation-service.js";
 import { getClient } from "./socket-clients.js";
 async function handleIncomingMessage(socket, userId, message) {
@@ -6,6 +8,8 @@ async function handleIncomingMessage(socket, userId, message) {
     let messageId = payload?.messageId;
     const conversationId = payload?.conversationId;
     const receiverId = payload?.receiverId;
+    const user = await getRecordById(users, +userId);
+    const fullName = user?.first_name + " " + user?.last_name;
     switch (type) {
         case "message:send":
             const { content, isGroup } = payload;
@@ -23,14 +27,29 @@ async function handleIncomingMessage(socket, userId, message) {
             break;
         case "message:read":
             await handleMessageRead(messageId, receiverId);
-            socket.emit("message", {
-                type: "message:read:ack",
-                payload: { messageId },
-            });
+            const receiver = getClient(receiverId);
+            if (receiver) {
+                receiver.emit("message", {
+                    type: "message:read",
+                    payload: { messageId },
+                });
+            }
             break;
         case "typing:start":
         case "typing:stop":
             await handleTypingEvent(userId, type, conversationId);
+            break;
+        case "online:status":
+            socket.broadcast.emit("message", {
+                type: "user:online",
+                payload: { userId, full_name: fullName, status: "online" },
+            });
+            break;
+        case "offline:status":
+            socket.broadcast.emit("message", {
+                type: "user:offline",
+                payload: { userId, full_name: fullName, status: "offline" },
+            });
             break;
         default:
             socket.emit("message", {
@@ -103,4 +122,5 @@ async function handleLastSeen(userId) {
         return;
     await updateLastSeen(userId);
 }
+async function handleOnlineStatus(userId) { }
 export { handleIncomingMessage, handleLastSeen };

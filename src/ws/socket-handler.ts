@@ -1,3 +1,4 @@
+import { users, type User } from "../db/schema/users.js";
 import {
   insertNewMessage,
   updateDeliveryStatus,
@@ -5,6 +6,7 @@ import {
   updateMessageAsRead,
   updateMessageAsSent,
 } from "../helpers/message-helper.js";
+import { getRecordById } from "../services/db/base-db-service.js";
 import { fetchParticipantsForSingleConversation } from "../services/db/conversation-service.js";
 import type { WsMessage, MessageSendPayload } from "../types/app.types.js";
 import { getClient } from "./socket-clients.js";
@@ -22,6 +24,10 @@ async function handleIncomingMessage(
   const conversationId = payload?.conversationId;
 
   const receiverId = payload?.receiverId;
+
+  const user = await getRecordById<User>(users, +userId);
+
+  const fullName = user?.first_name + " " + user?.last_name;
 
   switch (type) {
     case "message:send":
@@ -53,16 +59,34 @@ async function handleIncomingMessage(
     case "message:read":
       await handleMessageRead(messageId, receiverId);
 
-      socket.emit("message", {
-        type: "message:read:ack",
-        payload: { messageId },
-      });
+      const receiver = getClient(receiverId);
+
+      if (receiver) {
+        receiver.emit("message", {
+          type: "message:read",
+          payload: { messageId },
+        });
+      }
 
       break;
 
     case "typing:start":
     case "typing:stop":
       await handleTypingEvent(userId, type, conversationId);
+      break;
+
+    case "online:status":
+      socket.broadcast.emit("message", {
+        type: "user:online",
+        payload: { userId, full_name: fullName, status: "online" },
+      });
+      break;
+
+    case "offline:status":
+      socket.broadcast.emit("message", {
+        type: "user:offline",
+        payload: { userId, full_name: fullName, status: "offline" },
+      });
       break;
 
     default:
@@ -170,5 +194,7 @@ async function handleLastSeen(userId: number) {
 
   await updateLastSeen(userId);
 }
+
+async function handleOnlineStatus(userId: number) {}
 
 export { handleIncomingMessage, handleLastSeen };
