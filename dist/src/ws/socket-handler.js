@@ -13,17 +13,15 @@ async function handleIncomingMessage(socket, userId, message) {
     switch (type) {
         case "message:send":
             const { content, isGroup } = payload;
+            console.log("Entering000");
             const message = await insertNewMessage(conversationId, +userId, content);
+            console.log("Message", message);
             if (isGroup) {
                 await handleGroupMessage(+conversationId, +userId, content, message.id);
             }
             else {
                 await handleDirectMessage(receiverId, userId, content, message.id, conversationId);
             }
-            socket.emit("message", {
-                type: isGroup ? "group:message:ack" : "direct:message:ack",
-                payload: { messageId: message.id, status: "delivered" },
-            });
             break;
         case "message:read":
             await handleMessageRead(messageId, receiverId);

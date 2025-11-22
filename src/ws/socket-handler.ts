@@ -35,7 +35,11 @@ async function handleIncomingMessage(
         isGroup?: boolean;
       };
 
+      console.log("Entering000");
+
       const message = await insertNewMessage(conversationId, +userId, content);
+
+      console.log("Message", message);
 
       if (isGroup) {
         await handleGroupMessage(+conversationId, +userId, content, message.id);
@@ -103,6 +107,7 @@ async function handleDirectMessage(
   const receiver = getClient(receiverId);
 
   if (receiver) {
+
     const payload = {
       type: "direct:message:new",
       payload: { from: senderId, content, messageId, conversationId },

@@ -17,8 +17,8 @@ export const jwtConfig = {
     expires_in: 60 * 60 * 24 * 30,
 };
 export const s3Config = {
-    accessKeyId: envData.AWS_S3_ACCESS_KEY_ID,
-    secretAccessKey: envData.AWS_S3_SECRET_ACCESS_KEY,
-    region: envData.AWS_S3_REGION,
-    bucket: envData.AWS_S3_BUCKET,
+    accessKeyId: envData.S3_ACCESS_KEY_ID,
+    secretAccessKey: envData.S3_SECRET_ACCESS_KEY,
+    region: envData.S3_REGION,
+    bucket: envData.S3_BUCKET,
 };
